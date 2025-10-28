@@ -45,3 +45,26 @@
   margin-top: 15px;
   font-size: 14px;
 }
+
+/* Add or modify these styles in Login.css */
+
+.login-icon-wrapper {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.login-icon {
+  width: 60px; /* Adjust size as needed */
+  height: 60px; /* Adjust size as needed */
+  /* The 'color' property will not affect an <img> tag */
+  /* The color must be set inside your copypaste.svg file */
+}
+.login-footer {
+  width: 100%;
+  max-width: 400px; /* Match the max-width of the login form */
+  text-align: center;
+  margin-top: 20px; /* Space above the footer */
+  color: #000000; /* A subtle gray color */
+  font-size: 16px;
+}
+/* ... (rest of your Login.css) ... */

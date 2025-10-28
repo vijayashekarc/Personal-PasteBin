@@ -39,6 +39,15 @@ function Login({ onLoginSuccess }) {
   return (
     <div className="login-container">
       <form onSubmit={handleSubmit} className="login-form">
+        {/* --- USE YOUR SVG FILE HERE --- */}
+        <div className="login-icon-wrapper">
+          <img
+            src="/copypaste.svg" // This path works because it's in the 'public' folder
+            alt="Login Icon"
+            className="login-icon"
+          />
+        </div>
+        {/* --- END SVG --- */}
         <h2>Welcome Vijayashekar!</h2>
         <p>Enter the password to access your Pastebin.</p>
         <input
@@ -50,8 +59,25 @@ function Login({ onLoginSuccess }) {
         />
         <button type="submit">Unlock</button>
         {error && <p className="error-message">{error}</p>}
+    {/* --- MODIFY YOUR FOOTER HERE --- */}
+      <footer className="login-footer">
+        <p>
+          Designed by Vijayasheker C |{' '}
+          <a 
+            href="https://github.com/vijayashekarc/Personal-PasteBin" 
+            target="_blank" 
+            rel="noopener noreferrer"
+          >
+            GitHub
+          </a>
+        </p>
+      </footer>
+      {/* --- END FOOTER --- */}
       </form>
+
+      
     </div>
+    
   );
 }
 
