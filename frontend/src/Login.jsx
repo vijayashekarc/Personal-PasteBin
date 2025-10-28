@@ -11,7 +11,7 @@ function Login({ onLoginSuccess }) {
     e.preventDefault();
     setError('');
 
-    fetch('http://localhost:4000/auth/login', {
+    fetch('https://personal-paste-bin.vercel.app/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
