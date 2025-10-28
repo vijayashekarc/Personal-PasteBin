@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Login from './Login'; // <-- Import the Login component
 
-const API_URL = 'https://personal-paste-bin.vercel.app/snippets';
+const API_URL = 'https://personal-paste-bin.vercel.app/api/snippets';
 
 function App() {
   // --- NEW AUTH STATE ---
-  // We check localStorage *immediately* for the tokens
+  // We check localStorage *immediately* for the token
   const [token, setToken] = useState(localStorage.getItem('authToken'));
   // --- END NEW AUTH STATE ---
 
