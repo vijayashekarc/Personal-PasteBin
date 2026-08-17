@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Pin, Tag, Save, Copy, Check, Clock, FileText } from 'lucide-react';
+import { X, Pin, Tag, Save, Copy, Check, FileText, Palette } from 'lucide-react';
+import { NOTE_COLORS } from '../utils/colors';
 
 export default function NoteEditModal({ note, isOpen, onClose, onSaveUpdate, showToast }) {
   const [title, setTitle] = useState('');
@@ -7,6 +8,7 @@ export default function NoteEditModal({ note, isOpen, onClose, onSaveUpdate, sho
   const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState('');
   const [isPinned, setIsPinned] = useState(false);
+  const [color, setColor] = useState('default');
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -16,6 +18,7 @@ export default function NoteEditModal({ note, isOpen, onClose, onSaveUpdate, sho
       setContent(note.content || '');
       setTags(note.tags || []);
       setIsPinned(Boolean(note.isPinned));
+      setColor(note.color || 'default');
       setTagInput('');
       setCopied(false);
     }
@@ -65,6 +68,7 @@ export default function NoteEditModal({ note, isOpen, onClose, onSaveUpdate, sho
         content: content,
         tags: tags,
         isPinned: isPinned,
+        color: color,
       });
       showToast('Note updated successfully');
       onClose();
@@ -89,7 +93,7 @@ export default function NoteEditModal({ note, isOpen, onClose, onSaveUpdate, sho
   return (
     <div className="floating-modal-overlay" onClick={onClose}>
       <div
-        className="paper-card floating-note-window"
+        className={`paper-card floating-note-window note-card-theme-${color}`}
         onClick={(e) => e.stopPropagation()}
       >
         <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="floating-window-form">
@@ -151,31 +155,54 @@ export default function NoteEditModal({ note, isOpen, onClose, onSaveUpdate, sho
               autoFocus
             />
 
-            {/* Tags section */}
-            <div className="floating-tags-section">
-              <div className="tags-display">
-                {tags.map((tag) => (
-                  <span key={tag} className="tag-chip">
-                    #{tag}
+            {/* Tags & Color selection */}
+            <div className="floating-expanded-controls">
+              {/* Tags section */}
+              <div className="floating-tags-section">
+                <div className="tags-display">
+                  {tags.map((tag) => (
+                    <span key={tag} className="tag-chip">
+                      #{tag}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTag(tag)}
+                        className="tag-remove-btn"
+                      >
+                        <X size={11} />
+                      </button>
+                    </span>
+                  ))}
+                  <div className="tag-input-wrapper">
+                    <Tag size={13} className="tag-icon" />
+                    <input
+                      type="text"
+                      placeholder="Add tag + Enter..."
+                      value={tagInput}
+                      onChange={(e) => setTagInput(e.target.value)}
+                      onKeyDown={handleAddTag}
+                      className="tag-input"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Color Swatch Picker */}
+              <div className="color-swatch-row">
+                <span className="swatch-label">
+                  <Palette size={13} />
+                  <span>Card Color:</span>
+                </span>
+                <div className="swatch-dots-list">
+                  {NOTE_COLORS.map((c) => (
                     <button
+                      key={c.id}
                       type="button"
-                      onClick={() => handleRemoveTag(tag)}
-                      className="tag-remove-btn"
-                    >
-                      <X size={11} />
-                    </button>
-                  </span>
-                ))}
-                <div className="tag-input-wrapper">
-                  <Tag size={13} className="tag-icon" />
-                  <input
-                    type="text"
-                    placeholder="Add tag + Enter..."
-                    value={tagInput}
-                    onChange={(e) => setTagInput(e.target.value)}
-                    onKeyDown={handleAddTag}
-                    className="tag-input"
-                  />
+                      onClick={() => setColor(c.id)}
+                      className={`color-swatch-dot color-dot-${c.id} ${color === c.id ? 'swatch-dot-selected' : ''}`}
+                      title={`Color: ${c.label}`}
+                      aria-label={`Select ${c.label} color`}
+                    />
+                  ))}
                 </div>
               </div>
             </div>

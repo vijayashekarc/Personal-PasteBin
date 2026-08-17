@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Plus, Pin, Clipboard, Tag, X, Sparkles, Send } from 'lucide-react';
+import { Plus, Pin, Clipboard, Tag, X, Send, Palette } from 'lucide-react';
+import { NOTE_COLORS } from '../utils/colors';
 
 export default function NoteComposer({ onSaveNote, showToast }) {
   const [title, setTitle] = useState('');
@@ -7,6 +8,7 @@ export default function NoteComposer({ onSaveNote, showToast }) {
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState([]);
   const [isPinned, setIsPinned] = useState(false);
+  const [color, setColor] = useState('default');
   const [isExpanded, setIsExpanded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -60,6 +62,7 @@ export default function NoteComposer({ onSaveNote, showToast }) {
         content: content,
         tags: tags,
         isPinned: isPinned,
+        color: color,
       });
 
       // Reset form
@@ -68,6 +71,7 @@ export default function NoteComposer({ onSaveNote, showToast }) {
       setTags([]);
       setTagInput('');
       setIsPinned(false);
+      setColor('default');
       setIsExpanded(false);
       showToast('Note saved successfully');
     } catch (err) {
@@ -79,7 +83,7 @@ export default function NoteComposer({ onSaveNote, showToast }) {
   };
 
   return (
-    <div className="paper-card composer-card">
+    <div className={`paper-card composer-card note-card-theme-${color}`}>
       <form onSubmit={handleSubmit} onKeyDown={handleKeyDown}>
         {/* Title and Pin Toggle */}
         <div className="composer-header">
@@ -114,32 +118,55 @@ export default function NoteComposer({ onSaveNote, showToast }) {
           />
         </div>
 
-        {/* Tags & Controls when expanded */}
+        {/* Tags & Color Swatches when expanded */}
         {isExpanded && (
-          <div className="composer-tags-section">
-            <div className="tags-display">
-              {tags.map((tag) => (
-                <span key={tag} className="tag-chip">
-                  #{tag}
+          <div className="composer-expanded-controls">
+            {/* Tags section */}
+            <div className="composer-tags-section">
+              <div className="tags-display">
+                {tags.map((tag) => (
+                  <span key={tag} className="tag-chip">
+                    #{tag}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveTag(tag)}
+                      className="tag-remove-btn"
+                    >
+                      <X size={11} />
+                    </button>
+                  </span>
+                ))}
+                <div className="tag-input-wrapper">
+                  <Tag size={13} className="tag-icon" />
+                  <input
+                    type="text"
+                    placeholder="Add tag + Enter..."
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={handleAddTag}
+                    className="tag-input"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Color Swatch Picker */}
+            <div className="color-swatch-row">
+              <span className="swatch-label">
+                <Palette size={13} />
+                <span>Color:</span>
+              </span>
+              <div className="swatch-dots-list">
+                {NOTE_COLORS.map((c) => (
                   <button
+                    key={c.id}
                     type="button"
-                    onClick={() => handleRemoveTag(tag)}
-                    className="tag-remove-btn"
-                  >
-                    <X size={11} />
-                  </button>
-                </span>
-              ))}
-              <div className="tag-input-wrapper">
-                <Tag size={13} className="tag-icon" />
-                <input
-                  type="text"
-                  placeholder="Add tag + Enter..."
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={handleAddTag}
-                  className="tag-input"
-                />
+                    onClick={() => setColor(c.id)}
+                    className={`color-swatch-dot color-dot-${c.id} ${color === c.id ? 'swatch-dot-selected' : ''}`}
+                    title={`Color: ${c.label}`}
+                    aria-label={`Select ${c.label} color`}
+                  />
+                ))}
               </div>
             </div>
           </div>

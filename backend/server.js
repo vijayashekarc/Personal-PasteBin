@@ -256,7 +256,7 @@ app.get('/api/notes', verifySessionAndToken, async (req, res) => {
 
 // POST /api/notes (Create Note)
 app.post('/api/notes', verifySessionAndToken, async (req, res) => {
-  const { title, content, tags, isPinned } = req.body;
+  const { title, content, tags, isPinned, color } = req.body;
 
   if (!content || content.trim() === '') {
     return res.status(400).json({ message: 'Note content cannot be empty' });
@@ -272,6 +272,7 @@ app.post('/api/notes', verifySessionAndToken, async (req, res) => {
       content: content,
       tags: cleanTags,
       isPinned: Boolean(isPinned),
+      color: color || 'default',
     });
 
     const savedNote = await newNote.save();
@@ -284,7 +285,7 @@ app.post('/api/notes', verifySessionAndToken, async (req, res) => {
 // PUT /api/notes/:id (Update Note)
 app.put('/api/notes/:id', verifySessionAndToken, async (req, res) => {
   const { id } = req.params;
-  const { title, content, tags, isPinned } = req.body;
+  const { title, content, tags, isPinned, color } = req.body;
 
   if (content !== undefined && content.trim() === '') {
     return res.status(400).json({ message: 'Note content cannot be empty' });
@@ -300,6 +301,7 @@ app.put('/api/notes/:id', verifySessionAndToken, async (req, res) => {
         : [];
     }
     if (isPinned !== undefined) updateData.isPinned = Boolean(isPinned);
+    if (color !== undefined) updateData.color = color;
 
     const updatedNote = await Note.findByIdAndUpdate(id, updateData, { new: true });
     if (!updatedNote) {

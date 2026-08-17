@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import NoteCard from './NoteCard';
-import { StickyNote, Search, Pin, Layers } from 'lucide-react';
+import { StickyNote, Search, Pin, Layers, Loader2 } from 'lucide-react';
+
+const INITIAL_BATCH_SIZE = 12;
+const BATCH_INCREMENT = 12;
 
 export default function NoteGrid({
   notes = [],
@@ -12,6 +15,35 @@ export default function NoteGrid({
   onDelete,
   showToast,
 }) {
+  const [visibleCount, setVisibleCount] = useState(INITIAL_BATCH_SIZE);
+  const observerTarget = useRef(null);
+
+  // Reset pagination on search / filter changes
+  useEffect(() => {
+    setVisibleCount(INITIAL_BATCH_SIZE);
+  }, [searchQuery, selectedTag, notes.length]);
+
+  // IntersectionObserver for lazy loading more notes on scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && visibleCount < notes.length) {
+          setVisibleCount((prev) => Math.min(prev + BATCH_INCREMENT, notes.length));
+        }
+      },
+      { threshold: 0.1, rootMargin: '200px' }
+    );
+
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) observer.unobserve(currentTarget);
+    };
+  }, [visibleCount, notes.length]);
+
   if (loading) {
     return (
       <div className="empty-state-card">
@@ -41,9 +73,13 @@ export default function NoteGrid({
     );
   }
 
-  // Separate pinned and regular notes
-  const pinnedNotes = notes.filter((n) => n.isPinned);
-  const otherNotes = notes.filter((n) => !n.isPinned);
+  // Slice visible notes for lazy loading
+  const visibleNotes = notes.slice(0, visibleCount);
+  const pinnedNotes = visibleNotes.filter((n) => n.isPinned);
+  const otherNotes = visibleNotes.filter((n) => !n.isPinned);
+
+  const totalPinned = notes.filter((n) => n.isPinned).length;
+  const hasMore = visibleCount < notes.length;
 
   return (
     <div className="notes-container">
@@ -54,7 +90,7 @@ export default function NoteGrid({
             <div className="section-title-badge pinned-section-badge">
               <Pin size={13} className="pin-fill-icon" />
               <span>Pinned Notes</span>
-              <span className="section-count-pill">{pinnedNotes.length}</span>
+              <span className="section-count-pill">{totalPinned}</span>
             </div>
           </div>
           <div className="notes-grid">
@@ -79,7 +115,7 @@ export default function NoteGrid({
             <div className="section-title-badge">
               <Layers size={13} />
               <span>All Notes</span>
-              <span className="section-count-pill">{otherNotes.length}</span>
+              <span className="section-count-pill">{notes.length - totalPinned}</span>
             </div>
           </div>
         )}
@@ -95,6 +131,16 @@ export default function NoteGrid({
             />
           ))}
         </div>
+      </div>
+
+      {/* Lazy Loading Sentinel Target */}
+      <div ref={observerTarget} className="lazy-scroll-sentinel">
+        {hasMore && (
+          <div className="lazy-load-indicator">
+            <Loader2 size={18} className="spinner-icon" />
+            <span>Loading more notes ({visibleCount} of {notes.length})...</span>
+          </div>
+        )}
       </div>
     </div>
   );

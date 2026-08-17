@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Copy, Check, Pin, Edit3, Trash2, Tag, Clock } from 'lucide-react';
+import { Copy, Check, Pin, Edit3, Trash2, Clock } from 'lucide-react';
 
 export default function NoteCard({ note, onTogglePin, onEdit, onDelete, showToast }) {
   const [copied, setCopied] = useState(false);
@@ -43,10 +43,12 @@ export default function NoteCard({ note, onTogglePin, onEdit, onDelete, showToas
     });
   };
 
+  const noteColor = note.color || 'default';
+
   return (
     <div
       onClick={handleCardClick}
-      className={`paper-card note-card ${note.isPinned ? 'note-card-pinned' : ''}`}
+      className={`paper-card note-card note-card-theme-${noteColor} ${note.isPinned ? 'note-card-pinned' : ''}`}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {

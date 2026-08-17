@@ -1,12 +1,9 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, Suspense, lazy } from 'react';
 import './App.css';
-import Login from './Login';
 import Navbar from './components/Navbar';
 import NoteComposer from './components/NoteComposer';
 import TagFilterBar from './components/TagFilterBar';
 import NoteGrid from './components/NoteGrid';
-import NoteEditModal from './components/NoteEditModal';
-import DeviceManagerModal from './components/DeviceManagerModal';
 import Toast from './components/Toast';
 import {
   getNotesApi,
@@ -17,6 +14,11 @@ import {
   getSessionsApi,
   logoutApi,
 } from './services/api';
+
+// Lazy loaded components for optimized bundle performance
+const Login = lazy(() => import('./Login'));
+const NoteEditModal = lazy(() => import('./components/NoteEditModal'));
+const DeviceManagerModal = lazy(() => import('./components/DeviceManagerModal'));
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('authToken'));
@@ -163,13 +165,17 @@ function App() {
 
   if (!token) {
     return (
-      <Login
-        onLoginSuccess={(newToken) => {
-          setToken(newToken);
-        }}
-      />
+      <Suspense fallback={<div className="loading-fallback"><div className="spinner"></div></div>}>
+        <Login
+          onLoginSuccess={(newToken) => {
+            setToken(newToken);
+          }}
+        />
+      </Suspense>
     );
   }
+
+  const isSearching = searchQuery.trim().length > 0;
 
   return (
     <div className="app-layout">
@@ -190,8 +196,10 @@ function App() {
 
       {/* Main Content Area */}
       <main className="main-content-container">
-        {/* Note Composer */}
-        <NoteComposer onSaveNote={handleSaveNote} showToast={showToast} />
+        {/* Note Composer: Automatically hidden when user is actively searching */}
+        {!isSearching && (
+          <NoteComposer onSaveNote={handleSaveNote} showToast={showToast} />
+        )}
 
         {/* Tag Filter Bar */}
         <TagFilterBar
@@ -201,7 +209,7 @@ function App() {
           totalNotesCount={notes.length}
         />
 
-        {/* Notes Grid */}
+        {/* Notes Grid with Progressive Lazy Loading */}
         <NoteGrid
           notes={notes}
           loading={loading}
@@ -228,22 +236,28 @@ function App() {
         </p>
       </footer>
 
-      {/* Modals */}
-      <NoteEditModal
-        note={editingNote}
-        isOpen={Boolean(editingNote)}
-        onClose={() => setEditingNote(null)}
-        onSaveUpdate={handleSaveUpdate}
-        showToast={showToast}
-      />
+      {/* Lazy Loaded Modals with Suspense */}
+      <Suspense fallback={null}>
+        {editingNote && (
+          <NoteEditModal
+            note={editingNote}
+            isOpen={Boolean(editingNote)}
+            onClose={() => setEditingNote(null)}
+            onSaveUpdate={handleSaveUpdate}
+            showToast={showToast}
+          />
+        )}
 
-      <DeviceManagerModal
-        token={token}
-        isOpen={deviceModalOpen}
-        onClose={() => setDeviceModalOpen(false)}
-        onSessionChanged={loadSessionsCount}
-        showToast={showToast}
-      />
+        {deviceModalOpen && (
+          <DeviceManagerModal
+            token={token}
+            isOpen={deviceModalOpen}
+            onClose={() => setDeviceModalOpen(false)}
+            onSessionChanged={loadSessionsCount}
+            showToast={showToast}
+          />
+        )}
+      </Suspense>
     </div>
   );
 }

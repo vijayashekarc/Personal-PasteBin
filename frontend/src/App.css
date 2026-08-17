@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Main Application Styles (NoteStack: Apple-Grade Absolute Black Dark Mode & Ceramic Glass)
+   Main Application Styles (NoteStack: Apple-Grade Absolute Black & Mobile Polish)
    ========================================================================== */
 
 .app-layout {
@@ -335,7 +335,86 @@
 }
 
 /* ==========================================================================
-   2. Apple Surface Cards (Notes & Composer)
+   2. Card Color Themes (Light Mode & Apple Dark Mode)
+   ========================================================================== */
+.note-card-theme-default {
+  /* Default Neutral */
+}
+
+/* BLUE THEME */
+.note-card-theme-blue {
+  background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%) !important;
+  border-color: rgba(2, 132, 199, 0.28) !important;
+}
+
+[data-theme="dark"] .note-card-theme-blue {
+  background: #0b1626 !important;
+  border-color: rgba(56, 189, 248, 0.28) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 12px rgba(56, 189, 248, 0.08) !important;
+}
+
+/* PURPLE THEME */
+.note-card-theme-purple {
+  background: linear-gradient(180deg, #faf5ff 0%, #f3e8ff 100%) !important;
+  border-color: rgba(147, 51, 234, 0.28) !important;
+}
+
+[data-theme="dark"] .note-card-theme-purple {
+  background: #170d26 !important;
+  border-color: rgba(168, 85, 247, 0.28) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 12px rgba(168, 85, 247, 0.08) !important;
+}
+
+/* GREEN THEME */
+.note-card-theme-green {
+  background: linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%) !important;
+  border-color: rgba(22, 163, 74, 0.28) !important;
+}
+
+[data-theme="dark"] .note-card-theme-green {
+  background: #0b1a13 !important;
+  border-color: rgba(52, 211, 153, 0.28) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 12px rgba(52, 211, 153, 0.08) !important;
+}
+
+/* AMBER THEME */
+.note-card-theme-amber {
+  background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%) !important;
+  border-color: rgba(217, 119, 6, 0.28) !important;
+}
+
+[data-theme="dark"] .note-card-theme-amber {
+  background: #1e1507 !important;
+  border-color: rgba(251, 191, 36, 0.28) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 12px rgba(251, 191, 36, 0.08) !important;
+}
+
+/* ROSE THEME */
+.note-card-theme-rose {
+  background: linear-gradient(180deg, #fff1f2 0%, #ffe4e6 100%) !important;
+  border-color: rgba(225, 29, 72, 0.28) !important;
+}
+
+[data-theme="dark"] .note-card-theme-rose {
+  background: #200d14 !important;
+  border-color: rgba(251, 113, 133, 0.28) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 12px rgba(251, 113, 133, 0.08) !important;
+}
+
+/* CYAN THEME */
+.note-card-theme-cyan {
+  background: linear-gradient(180deg, #ecfeff 0%, #cffafe 100%) !important;
+  border-color: rgba(8, 145, 178, 0.28) !important;
+}
+
+[data-theme="dark"] .note-card-theme-cyan {
+  background: #08171d !important;
+  border-color: rgba(34, 211, 238, 0.28) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 12px rgba(34, 211, 238, 0.08) !important;
+}
+
+/* ==========================================================================
+   3. Note Composer
    ========================================================================== */
 .paper-card {
   background: var(--bg-surface);
@@ -351,7 +430,6 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.07);
 }
 
-/* Note Composer */
 .composer-card {
   margin-bottom: 24px;
   padding: 20px 22px;
@@ -441,9 +519,16 @@
   font-family: var(--font-family);
 }
 
-/* Tags section */
-.composer-tags-section {
+.composer-expanded-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   margin-bottom: 14px;
+}
+
+.composer-tags-section {
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .tags-display {
@@ -506,7 +591,65 @@
   color: var(--text-muted);
 }
 
-/* Action buttons */
+/* Color Swatch Row */
+.color-swatch-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.swatch-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.swatch-dots-list {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.color-swatch-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+  position: relative;
+}
+
+.color-swatch-dot:hover {
+  transform: scale(1.15);
+}
+
+.swatch-dot-selected {
+  transform: scale(1.22) !important;
+  box-shadow: 0 0 0 2px var(--bg-surface), 0 0 0 4px var(--accent-primary);
+}
+
+.color-dot-default { background: #64748b; }
+.color-dot-blue { background: #0284c7; }
+.color-dot-purple { background: #8b5cf6; }
+.color-dot-green { background: #10b981; }
+.color-dot-amber { background: #f59e0b; }
+.color-dot-rose { background: #f43f5e; }
+.color-dot-cyan { background: #06b6d4; }
+
+[data-theme="dark"] .color-dot-default { background: #71717a; }
+[data-theme="dark"] .color-dot-blue { background: #38bdf8; }
+[data-theme="dark"] .color-dot-purple { background: #a78bfa; }
+[data-theme="dark"] .color-dot-green { background: #34d399; }
+[data-theme="dark"] .color-dot-amber { background: #fbbf24; }
+[data-theme="dark"] .color-dot-rose { background: #fb7185; }
+[data-theme="dark"] .color-dot-cyan { background: #22d3ee; }
+
+/* Composer Footer */
 .composer-footer {
   display: flex;
   align-items: center;
@@ -573,7 +716,7 @@
 }
 
 /* ==========================================================================
-   3. Tag Filter Bar
+   4. Tag Filter Bar
    ========================================================================= */
 .glass-filter-bar {
   display: flex;
@@ -647,7 +790,7 @@
 }
 
 /* ==========================================================================
-   4. Note Cards & Grid
+   5. Note Cards & Grid
    ========================================================================== */
 .notes-container {
   display: flex;
@@ -731,37 +874,29 @@
 .note-card:hover {
   transform: translateY(-3px) scale(1.008);
   box-shadow: var(--paper-shadow-hover);
-  border-color: var(--accent-soft-border);
 }
 
 [data-theme="dark"] .note-card:hover {
-  background: #161618;
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.18);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
 }
 
 /* Pinned Note State */
 .note-card-pinned {
-  border-color: rgba(245, 158, 11, 0.45);
-  background: var(--bg-surface);
-  border-left: 4.5px solid #f59e0b;
+  border-left: 4.5px solid #f59e0b !important;
   box-shadow: 0 4px 18px rgba(245, 158, 11, 0.08);
 }
 
 [data-theme="dark"] .note-card-pinned {
-  border-left: 4.5px solid #ff9f0a;
-  border-color: rgba(255, 159, 10, 0.3);
+  border-left: 4.5px solid #ff9f0a !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 159, 10, 0.2);
 }
 
 .note-card-pinned:hover {
-  border-color: #f59e0b;
   box-shadow: 0 8px 24px rgba(245, 158, 11, 0.16);
 }
 
 [data-theme="dark"] .note-card-pinned:hover {
-  border-color: #ff9f0a;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.8), 0 0 12px rgba(255, 159, 10, 0.25);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.8), 0 0 14px rgba(255, 159, 10, 0.3) !important;
 }
 
 .pinned-badge-chip {
@@ -868,6 +1003,7 @@
   overflow: hidden;
 }
 
+/* Minimal Thin Custom Scrollbars for Note Cards */
 .note-content-text {
   font-family: var(--font-mono);
   font-size: 0.84rem;
@@ -877,6 +1013,39 @@
   word-break: break-word;
   max-height: 180px;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+}
+
+.note-content-text::-webkit-scrollbar {
+  width: 3.5px;
+  height: 3.5px;
+}
+
+.note-content-text::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.note-content-text::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+}
+
+.note-content-text::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
+}
+
+[data-theme="dark"] .note-content-text {
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+[data-theme="dark"] .note-content-text::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+[data-theme="dark"] .note-content-text::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
 }
 
 .note-card-tags {
@@ -980,8 +1149,50 @@
   to { transform: rotate(360deg); }
 }
 
+/* Lazy Loading Sentinel & Indicator */
+.lazy-scroll-sentinel {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 12px 0;
+  margin-top: 6px;
+}
+
+.lazy-load-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  padding: 6px 16px;
+  border-radius: 9999px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  animation: fadeIn 0.2s ease-out;
+}
+
+[data-theme="dark"] .lazy-load-indicator {
+  background: #141416;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.spinner-icon {
+  animation: spin 0.8s linear infinite;
+  color: var(--accent-primary);
+}
+
+.loading-fallback {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+}
+
 /* ==========================================================================
-   5. Floating Window & Fluid Modal (Apple Dark Mode)
+   6. Floating Window & Fluid Modal (Apple Dark Mode)
    ========================================================================== */
 .floating-modal-overlay {
   position: fixed;
@@ -1179,8 +1390,16 @@
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
-.floating-tags-section {
+.floating-expanded-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   padding-top: 4px;
+}
+
+.floating-tags-section {
+  display: flex;
+  flex-wrap: wrap;
 }
 
 /* Floating Window Footer */
@@ -1428,7 +1647,7 @@
 }
 
 /* ==========================================================================
-   6. Keyframe Animations
+   7. Keyframe Animations
    ========================================================================== */
 @keyframes overlayFadeIn {
   from { opacity: 0; }
@@ -1447,7 +1666,7 @@
 }
 
 /* ==========================================================================
-   7. Toast Notifications
+   8. Toast Notifications
    ========================================================================== */
 .toast-container {
   position: fixed;
@@ -1515,7 +1734,7 @@
 }
 
 /* ==========================================================================
-   8. App Footer
+   9. App Footer
    ========================================================================== */
 .app-footer {
   text-align: center;
@@ -1542,22 +1761,56 @@
 }
 
 /* ==========================================================================
-   9. Mobile Responsive Optimizations
+   10. Mobile Responsive Optimizations & Padding Fixes
    ========================================================================== */
 @media (max-width: 768px) {
+  .main-content-container {
+    padding: 16px 12px 36px 12px;
+  }
+
   .ceramic-nav-inner {
     flex-wrap: wrap;
-    padding: 10px 14px;
+    padding: 10px 12px;
     gap: 8px;
   }
 
   .nav-brand-group {
     order: 1;
+    gap: 8px;
+  }
+
+  .brand-logo-frame {
+    width: 34px;
+    height: 34px;
+  }
+
+  .brand-title {
+    font-size: 1.05rem;
   }
 
   .nav-controls-group {
     order: 2;
     gap: 6px;
+  }
+
+  .ceramic-status-pill {
+    height: 34px;
+    padding: 0 10px;
+    font-size: 0.75rem;
+  }
+
+  .ceramic-icon-btn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .ceramic-logout-btn {
+    height: 34px;
+    padding: 0 10px;
+  }
+
+  .logout-text {
+    display: none;
   }
 
   .nav-search-container {
@@ -1567,30 +1820,95 @@
     margin: 4px 0 0 0;
   }
 
-  .logout-text {
-    display: none;
+  .ceramic-search-pill {
+    height: 38px;
+    padding: 0 14px;
   }
 
-  .ceramic-logout-btn {
-    padding: 0 10px;
+  .composer-card {
+    padding: 14px 14px;
+    margin-bottom: 18px;
+    border-radius: 14px;
+  }
+
+  .composer-title-input {
+    font-size: 1rem;
+  }
+
+  .composer-textarea {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
+
+  .glass-filter-bar {
+    padding: 6px 12px;
+    margin-bottom: 18px;
+    border-radius: 12px;
+  }
+
+  .notes-container {
+    gap: 20px;
+  }
+
+  .notes-section {
+    gap: 10px;
   }
 
   .notes-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .note-card {
+    padding: 14px 14px;
+    border-radius: 14px;
+    min-height: 160px;
+  }
+
+  .note-title {
+    font-size: 0.92rem;
+  }
+
+  .note-content-text {
+    max-height: 150px;
+    font-size: 0.82rem;
+  }
+
+  .floating-modal-overlay {
+    padding: 10px;
   }
 
   .floating-note-window {
-    max-height: 95vh;
-    border-radius: 16px;
+    max-height: 94vh;
+    border-radius: 18px;
+  }
+
+  .floating-window-header {
+    padding: 12px 14px;
   }
 
   .floating-window-body {
-    padding: 16px;
+    padding: 14px 14px;
+    gap: 10px;
   }
 
-  .floating-window-header,
+  .floating-title-input {
+    font-size: 1.1rem;
+  }
+
+  .floating-content-textarea {
+    padding: 12px 14px;
+    font-size: 0.86rem;
+    min-height: 180px;
+  }
+
   .floating-window-footer {
-    padding: 12px 16px;
+    padding: 10px 14px;
+  }
+
+  .color-swatch-row {
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   .shortcut-hint-pill {
@@ -1611,14 +1929,20 @@
 
   .paper-btn-primary,
   .paper-btn-secondary {
-    padding: 10px 16px;
-    font-size: 0.85rem;
+    padding: 9px 14px;
+    font-size: 0.82rem;
   }
 
   .toast-container {
-    left: 16px;
-    right: 16px;
-    bottom: 16px;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
     min-width: unset;
+    padding: 10px 14px;
+  }
+
+  .app-footer {
+    padding: 20px 12px;
+    font-size: 0.78rem;
   }
 }
