@@ -1,169 +1,249 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import './App.css';
-import Login from './Login'; // <-- Import the Login component
-
-const API_URL = 'https://personal-paste-bin.vercel.app/api/snippets';
+import Login from './Login';
+import Navbar from './components/Navbar';
+import NoteComposer from './components/NoteComposer';
+import TagFilterBar from './components/TagFilterBar';
+import NoteGrid from './components/NoteGrid';
+import NoteEditModal from './components/NoteEditModal';
+import DeviceManagerModal from './components/DeviceManagerModal';
+import Toast from './components/Toast';
+import {
+  getNotesApi,
+  createNoteApi,
+  updateNoteApi,
+  togglePinApi,
+  deleteNoteApi,
+  getSessionsApi,
+  logoutApi,
+} from './services/api';
 
 function App() {
-  // --- NEW AUTH STATE ---
-  // We check localStorage *immediately* for the token
   const [token, setToken] = useState(localStorage.getItem('authToken'));
-  // --- END NEW AUTH STATE ---
+  const [theme, setTheme] = useState(() => localStorage.getItem('pastebin_theme') || 'light');
+  
+  const [notes, setNotes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTag, setSelectedTag] = useState(null);
+  
+  const [activeSessionsCount, setActiveSessionsCount] = useState(1);
+  const [deviceModalOpen, setDeviceModalOpen] = useState(false);
+  const [editingNote, setEditingNote] = useState(null);
+  const [toast, setToast] = useState(null);
 
-  const [currentSnippet, setCurrentSnippet] = useState('');
-  const [allSnippets, setAllSnippets] = useState([]);
-  const [statusMessage, setStatusMessage] = useState('');
-
-  // --- NEW HELPER FUNCTION ---
-  // We'll use this to add the token to all our API requests
-  const getAuthHeaders = () => {
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`, // Add the token
-    };
-  };
-  // --- END NEW HELPER ---
-
-  // 1. Fetch all snippets
+  // Sync theme with DOM
   useEffect(() => {
-    // Only fetch if we are logged in (have a token)
-    if (!token) return;
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('pastebin_theme', theme);
+  }, [theme]);
 
-    fetch(API_URL, {
-      headers: getAuthHeaders(), // <-- Use auth headers
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to fetch');
-        return res.json();
-      })
-      .then((data) => setAllSnippets(data))
-      .catch((err) => {
-        console.error("Error fetching snippets:", err);
-        // If token is bad, log out
-        if (err.message.includes('401') || err.message.includes('403')) {
-          handleLogout();
-        }
-      });
-  }, [token]); // <-- Re-run this effect if the token changes
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  }, []);
 
-  // 2. Function to SAVE
-  const handleSaveSnippet = () => {
-    if (currentSnippet.trim() === '') return;
-    fetch(API_URL, {
-      method: 'POST',
-      headers: getAuthHeaders(), // <-- Use auth headers
-      body: JSON.stringify({ text: currentSnippet }),
-    })
-      .then((res) => res.json())
-      .then((newSnippet) => {
-        setAllSnippets([newSnippet, ...allSnippets]);
-        setCurrentSnippet('');
-      })
-      .catch((err) => console.error("Error saving snippet:", err));
-  };
+  // Helper for displaying toast
+  const showToast = useCallback((message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => {
+      setToast((current) => (current && current.message === message ? null : current));
+    }, 3000);
+  }, []);
 
-  // 3. Function to DELETE
-  const handleDeleteSnippet = (idToDelete) => {
-    fetch(`${API_URL}/${idToDelete}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders(), // <-- Use auth headers
-    })
-      .then((res) => res.json())
-      .then(() => {
-        setAllSnippets(
-          allSnippets.filter((snippet) => snippet._id !== idToDelete)
-        );
-      })
-      .catch((err) => console.error("Error deleting snippet:", err));
-  };
-
-  // 4. Function to COPY (no change)
-  const handleCopy = (text) => {
-    navigator.clipboard.writeText(text)
-      .then(() => {
-        setStatusMessage('Copied to clipboard!');
-        setTimeout(() => setStatusMessage(''), 2000);
-      })
-      .catch((err) => console.error("Failed to copy text: ", err));
-  };
-
-  // 5. Function to PASTE (no change)
-  const handlePaste = () => {
-    navigator.clipboard.readText()
-      .then((text) => setCurrentSnippet(text))
-      .catch((err) => console.error('Failed to read clipboard contents: ', err));
-  };
-  
-  // --- NEW LOGOUT FUNCTION ---
-  const handleLogout = () => {
+  const handleLogout = useCallback(async () => {
+    if (token) {
+      await logoutApi(token);
+    }
     localStorage.removeItem('authToken');
+    localStorage.removeItem('activeSessions');
     setToken(null);
-    setAllSnippets([]); // Clear data
+    setNotes([]);
+    setDeviceModalOpen(false);
+  }, [token]);
+
+  // Load active sessions count
+  const loadSessionsCount = useCallback(async () => {
+    if (!token) return;
+    try {
+      const sessions = await getSessionsApi(token);
+      if (Array.isArray(sessions)) {
+        setActiveSessionsCount(sessions.length);
+      }
+    } catch (err) {
+      if (err.message && (err.message.includes('revoked') || err.message.includes('401'))) {
+        showToast('Your session was revoked remotely', 'error');
+        handleLogout();
+      }
+    }
+  }, [token, handleLogout, showToast]);
+
+  // Load notes
+  const loadNotes = useCallback(async () => {
+    if (!token) return;
+    setLoading(true);
+    try {
+      const data = await getNotesApi({ q: searchQuery, tag: selectedTag }, token);
+      setNotes(data);
+    } catch (err) {
+      console.error('Error fetching notes:', err);
+      if (err.status === 401 || err.sessionRevoked) {
+        showToast('Session expired or revoked from another device', 'error');
+        handleLogout();
+      } else {
+        showToast(err.message || 'Failed to load notes', 'error');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [token, searchQuery, selectedTag, handleLogout, showToast]);
+
+  // Fetch notes on dependency changes
+  useEffect(() => {
+    if (token) {
+      loadNotes();
+      loadSessionsCount();
+    }
+  }, [token, searchQuery, selectedTag, loadNotes, loadSessionsCount]);
+
+  // Periodic heartbeat for sessions count
+  useEffect(() => {
+    if (!token) return;
+    const interval = setInterval(loadSessionsCount, 30000);
+    return () => clearInterval(interval);
+  }, [token, loadSessionsCount]);
+
+  // Calculate unique tags with counts across all notes
+  const allTagsWithCounts = useMemo(() => {
+    const counts = {};
+    notes.forEach((note) => {
+      if (Array.isArray(note.tags)) {
+        note.tags.forEach((tag) => {
+          counts[tag] = (counts[tag] || 0) + 1;
+        });
+      }
+    });
+    return Object.entries(counts).map(([name, count]) => ({ name, count }));
+  }, [notes]);
+
+  // Note CRUD actions
+  const handleSaveNote = async (newNoteData) => {
+    const saved = await createNoteApi(newNoteData, token);
+    setNotes((prev) => [saved, ...prev]);
+    loadSessionsCount();
   };
-  
-  // --- NEW CONDITIONAL RENDER ---
-  // If there is no token, show the Login component
+
+  const handleSaveUpdate = async (id, updatedData) => {
+    const saved = await updateNoteApi(id, updatedData, token);
+    setNotes((prev) => prev.map((n) => (n._id === id ? saved : n)));
+  };
+
+  const handleTogglePin = async (id) => {
+    try {
+      const updated = await togglePinApi(id, token);
+      setNotes((prev) => {
+        const next = prev.map((n) => (n._id === id ? updated : n));
+        return next.sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0));
+      });
+      showToast(updated.isPinned ? 'Pinned note' : 'Unpinned note');
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  };
+
+  const handleDeleteNote = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this note?')) return;
+    try {
+      await deleteNoteApi(id, token);
+      setNotes((prev) => prev.filter((n) => n._id !== id));
+      showToast('Note deleted');
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  };
+
   if (!token) {
     return (
-      <Login 
-        onLoginSuccess={() => {
-          // When login is successful, get token from localStorage and update state
-          setToken(localStorage.getItem('authToken'));
-        }} 
+      <Login
+        onLoginSuccess={(newToken) => {
+          setToken(newToken);
+        }}
       />
     );
   }
 
-  // --- Main App Render ---
-  // If we have a token, show the pastebin
   return (
-    <div className="app-container">
-      <button onClick={handleLogout} className="logout-button">
-        Log Out
-      </button>
-      <h1>My Personal Pastebin</h1>
-      <p>Your MERN stack snippet manager.</p>
-      
-      {/* (Rest of your JSX is the same) */}
+    <div className="app-layout">
+      {/* Toast Notification */}
+      <Toast toast={toast} onClose={() => setToast(null)} />
 
-      {statusMessage && <div className="status-message">{statusMessage}</div>}
-
-      <textarea
-        className="main-textarea"
-        value={currentSnippet}
-        onChange={(e) => setCurrentSnippet(e.target.value)}
-        placeholder="Paste here"
+      {/* Top Navbar */}
+      <Navbar
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        activeSessionsCount={activeSessionsCount}
+        maxSessions={2}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        onOpenDeviceModal={() => setDeviceModalOpen(true)}
+        onLogout={handleLogout}
       />
-      <div className="main-actions">
-        <button onClick={handlePaste}>Paste from Clipboard</button>
-        <button className="save-button" onClick={handleSaveSnippet}>
-          Save Snippet
-        </button>
-      </div>
 
-      <hr />
+      {/* Main Content Area */}
+      <main className="main-content-container">
+        {/* Note Composer */}
+        <NoteComposer onSaveNote={handleSaveNote} showToast={showToast} />
 
-      <h2>Saved Snippets</h2>
-      <div className="snippets-list">
-        {allSnippets.length === 0 ? (
-          <p>No snippets saved yet.</p>
-        ) : (
-          allSnippets.map((snippet) => (
-            <div key={snippet._id} className="snippet-card">
-              <pre>{snippet.text}</pre>
-              <div className="snippet-actions">
-                <button onClick={() => handleCopy(snippet.text)}>Copy</button>
-                <button
-                  className="delete-button"
-                  onClick={() => handleDeleteSnippet(snippet._id)}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+        {/* Tag Filter Bar */}
+        <TagFilterBar
+          tags={allTagsWithCounts}
+          selectedTag={selectedTag}
+          onSelectTag={setSelectedTag}
+          totalNotesCount={notes.length}
+        />
+
+        {/* Notes Grid */}
+        <NoteGrid
+          notes={notes}
+          loading={loading}
+          searchQuery={searchQuery}
+          selectedTag={selectedTag}
+          onTogglePin={handleTogglePin}
+          onEdit={(note) => setEditingNote(note)}
+          onDelete={handleDeleteNote}
+          showToast={showToast}
+        />
+      </main>
+
+      {/* App Footer */}
+      <footer className="app-footer">
+        <p>
+          Developed by Vijayashekar |{' '}
+          <a
+            href="https://github.com/vijayashekarc/Personal-PasteBin"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GitHub
+          </a>
+        </p>
+      </footer>
+
+      {/* Modals */}
+      <NoteEditModal
+        note={editingNote}
+        isOpen={Boolean(editingNote)}
+        onClose={() => setEditingNote(null)}
+        onSaveUpdate={handleSaveUpdate}
+        showToast={showToast}
+      />
+
+      <DeviceManagerModal
+        token={token}
+        isOpen={deviceModalOpen}
+        onClose={() => setDeviceModalOpen(false)}
+        onSessionChanged={loadSessionsCount}
+        showToast={showToast}
+      />
     </div>
   );
 }
